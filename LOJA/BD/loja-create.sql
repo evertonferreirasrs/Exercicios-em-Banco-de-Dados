@@ -1,0 +1,110 @@
+﻿CREATE TABLE endereco(
+	cliente_fk BIGINT NOT NULL,
+	nome VARCHAR(100) NOT NULL,
+	rua VARCHAR(200) NOT NULL,
+	numero VARCHAR(20) NOT NULL,		
+	bairro VARCHAR(100) NOT NULL,
+	cidade VARCHAR(100) NOT NULL,
+	uf VARCHAR(2) NOT NULL,
+	cep INT NOT NULL,
+	PRIMARY KEY(cliente_fk,nome)
+);
+
+CREATE TABLE cliente(
+	id BIGSERIAL UNIQUE NOT NULL,
+	email VARCHAR(200) UNIQUE NOT NULL,
+	senha VARCHAR(50) NOT NULL,
+	PRIMARY KEY(id)
+);
+CREATE TABLE pessoa_fisica(
+	cliente_fk BIGINT NOT NULL,
+	cpf VARCHAR(14) UNIQUE NOT NULL,
+	PRIMARY KEY(cliente_fk)
+);
+CREATE TABLE pessoa_juridica(
+	cliente_fk BIGINT NOT NULL,
+	cnpj VARCHAR(20) UNIQUE NOT NULL,
+	PRIMARY KEY(cliente_fk)	
+);
+
+CREATE TABLE pedido(
+	id BIGSERIAL UNIQUE NOT NULL,
+	cliente_fk BIGINT NOT NULL,
+	data_hora TIMESTAMP NOT NULL,
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE pedido_status(
+	pedido_fk BIGINT NOT NULL,
+	status_fk BIGINT NOT NULL,
+	data_hora TIMESTAMP NOT NULL,
+	observacao TEXT,
+	PRIMARY KEY(pedido_fk,status_fk)
+);
+
+CREATE TABLE status(
+	id BIGSERIAL UNIQUE NOT NULL,
+	nome VARCHAR(100) UNIQUE NOT NULL,
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE categoria(
+	id BIGSERIAL UNIQUE NOT NULL,
+	nome VARCHAR(100) UNIQUE NOT NULL,
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE produto(
+	id BIGSERIAL UNIQUE NOT NULL,
+	nome VARCHAR(100) UNIQUE NOT NULL,
+	preco FLOAT NOT NULL,
+	prazo_entrega INT NOT NULL,
+	ativo BOOLEAN NOT NULL,
+	categoria_fk BIGINT,
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE item_pedido(
+	pedido_fk BIGINT NOT NULL,
+	produto_fk BIGINT NOT NULL,
+	quantidade FLOAT NOT NULL,
+	preco FLOAT NOT NULL,
+	prazo_entrega INT NOT NULL,
+	PRIMARY KEY(pedido_fk,produto_fk)
+);
+
+ALTER TABLE endereco ADD CONSTRAINT endereco_cliente_fk
+FOREIGN KEY(cliente_fk) REFERENCES cliente(id)
+ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE pessoa_fisica ADD CONSTRAINT pessoa_fisica_fk 
+FOREIGN KEY(cliente_fk) REFERENCES cliente(id)
+ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE pessoa_juridica ADD CONSTRAINT pessoa_juridica_fk 
+FOREIGN KEY(cliente_fk) REFERENCES cliente(id)
+ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE pedido ADD CONSTRAINT pedido_cliente_fk 
+FOREIGN KEY(cliente_fk) REFERENCES cliente(id)
+ON UPDATE CASCADE ON DELETE NO ACTION;
+
+ALTER TABLE item_pedido ADD CONSTRAINT item_pedido_pedido_fk
+FOREIGN KEY(pedido_fk) REFERENCES pedido(id)
+ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE item_pedido ADD CONSTRAINT item_pedido_produto_fk
+FOREIGN KEY(produto_fk) REFERENCES produto(id)
+ON UPDATE CASCADE ON DELETE NO ACTION;
+
+ALTER TABLE pedido_status ADD CONSTRAINT pedido_status_pedido_fk
+FOREIGN KEY(pedido_fk) REFERENCES pedido(id)
+ON UPDATE CASCADE ON DELETE CASCADE;
+
+ALTER TABLE pedido_status ADD CONSTRAINT pedido_status_status_fk
+FOREIGN KEY(status_fk) REFERENCES status(id)
+ON UPDATE CASCADE ON DELETE NO ACTION;
+
+ALTER TABLE produto ADD CONSTRAINT produto_categoria_fk
+FOREIGN KEY(categoria_fk) REFERENCES categoria(id)
+ON UPDATE CASCADE ON DELETE SET NULL;

@@ -1,0 +1,80 @@
+﻿--TRIGGER-- 
+--EXERCICIO 1
+--Crie uma trigger que ao registar uma compra gere automaticamente as parcelas para pagamento das mesmas. 
+--Considere que dentro dessa trigger existirá uma constante que irá aplicar o juros de 1% para cada parcela (Não precisa ser juros compostos).
+--
+--create table compra(
+--	id bigint not null,
+--	data timestamp not null,
+--	valor double precision not null,
+--	parcela int not null,
+--	primary key(id)
+--);
+--create table parcela(
+--	compra_fk bigint not null,
+--	numero bigint not null,
+--	valor double precision not null,
+--	pago boolean not null,
+--	primary key(compra_fk, numero)
+--);
+--------------------------------------------------------
+--CREATE OR REPLACE FUNCTION atualizar_parcelas() RETURNS trigger AS $$
+--	DECLARE
+--		i INT;
+--		valor DOUBLE PRECISION;
+--		juros DOUBLE PRECISION;
+--	BEGIN
+--		valor = NEW.valor;
+--		juros = 0.01;
+--		IF(NEW.parcela > 1) THEN
+--			valor = valor + (valor * juros);
+--		END IF;
+--		WHILE (i < NEW.parcela) LOOP
+--			INSERT INTO parcela(compra_fk, numero, valor, pago)
+--			VALUES (NEW.id, (i+1), valor, false);
+--			i = i+1;
+--		END LOOP;
+--		RETURN NEW;
+--	END;
+--$$ LANGUAGE plpgsql;
+--
+--CREATE TRIGGER trigger_atualizar_parcelas AFTER INSERT ON compra
+--FOR EACH ROW EXECUTE PROCEDURE atualizar_parcelas();
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+--EXERCICIO 2
+--Crie uma trigger que mantenha nas tuplas categoria de produto o valor medio dos preços de produtos de relacionados aquela categoria.
+--
+--create table categoria_produto(
+--	id bigint not null,
+--	nome varchar(100) not null,
+--	media_preco double precision not null,
+--	primary key(id)
+--);
+--
+--create table produto(
+--	id bigint not null,
+--	nome varchar(100) not null,
+--	valor double precision not null,
+--	tipo_produto_fk bigint not null,
+--	primary key(id)
+--);
+--------------------------------------------
+
+--CREATE OR REPLACE FUNCTION atualizar_categoria() RETURNS trigger AS $$
+--	DECLARE
+--		media DOUBLE PRECISION;
+--	BEGIN
+--		SELECT AVG(valor) INTO media FROM produto
+--		WHERE tipo_produto_fk = NEW.tipo_produto_fk;
+--
+--		UPDATE categoria_produto SET media_preco = media
+--		WHERE id = NEW.tipo_produto_fk;
+--		RETURN NEW;
+--	END;
+--$$ LANGUAGE plpgsql;
+--
+--CREATE TRIGGER trigger_atualizar_categoria AFTER INSERT ON produto
+--FOR EACH ROW EXECUTE PROCEDURE atualizar_categoria();
+
